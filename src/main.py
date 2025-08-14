@@ -1,25 +1,19 @@
 import os
-import sys
-# DON'T CHANGE THIS !!!
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-
-from flask import Flask, send_from_directory, request, jsonify
+from flask import Flask, send_from_directory, jsonify
 from flask_cors import CORS
 from src.models.user import db
 from src.routes.user import user_bp
 from src.routes.blockchain import blockchain_bp
 from src.routes.wallet import wallet_bp
 from src.routes.tokenomics import tokenomics_bp
-
-# Import NeuraX blockchain components
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from core.blockchain import NeuraXBlockchain
 from tokenomics.smart_contracts import NeuraXTokenomics
 
+# Initialize Flask app
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
 app.config['SECRET_KEY'] = 'neurax_blockchain_production_key_2026'
 
-# Enable CORS for all routes
+# Enable CORS
 CORS(app, origins="*")
 
 # Initialize NeuraX blockchain and tokenomics
@@ -61,7 +55,6 @@ def get_stats():
     try:
         blockchain_stats = neurax_blockchain.get_blockchain_stats()
         tokenomics_stats = neurax_tokenomics.get_tokenomics_stats()
-        
         return jsonify({
             "blockchain": blockchain_stats,
             "tokenomics": tokenomics_stats,
@@ -78,7 +71,7 @@ def serve(path):
     if static_folder_path is None:
         return "Static folder not configured", 404
 
-    if path != "" and os.path.exists(os.path.join(static_folder_path, path)):
+    if path and os.path.exists(os.path.join(static_folder_path, path)):
         return send_from_directory(static_folder_path, path)
     else:
         index_path = os.path.join(static_folder_path, 'index.html')
@@ -110,4 +103,5 @@ if __name__ == '__main__':
     print("Blockchain Status:", "Active" if neurax_blockchain else "Inactive")
     print("Tokenomics Status:", "Active" if neurax_tokenomics else "Inactive")
     app.run(host='0.0.0.0', port=5000, debug=False)
+
 
